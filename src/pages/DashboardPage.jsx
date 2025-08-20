@@ -7,6 +7,8 @@ import PerformanceHistory from "../components/PerformanceHistory"
 
 import styles from "./DashboardPage.module.css"
 import homeStyles from "./HomePage.module.css"
+import Icon from "../components/common/Icon"
+import FormBuilder from "../components/forms/FormBuilder"
 
 const DashboardPage = () => {
   // Dashboard state (unchanged)
@@ -503,137 +505,7 @@ const DashboardPage = () => {
     { id: "myProfile", label: "My Profile", icon: "user" },
   ]
 
-  // Map icon keys to inline SVGs (reusing the style from Home)
-  const Icon = ({ name }) => {
-    const common = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg" }
-    switch (name) {
-      case "dashboard":
-        return (
-          <svg {...common}>
-            <path
-              d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 22V12H15V22"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )
-      case "form":
-        return (
-          <svg {...common}>
-            <path
-              d="M21 3H3V21H21V3Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 8H15V12H9V8Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M17 16H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )
-      case "users":
-        return (
-          <svg {...common}>
-            <path
-              d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )
-      case "history":
-        return (
-          <svg {...common}>
-            <path
-              d="M12 22C16.9706 22 21 17.9706 21 13C21 8.02944 16.9706 4 12 4C7.02944 4 3 8.02944 3 13"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M12 9V13L15 16"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M3 13L6 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )
-      case "chart":
-        return (
-          <svg {...common}>
-            <path
-              d="M9 17V7M15 17V12M21 21H3V3H21V21Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )
-      case "user":
-        return (
-          <svg {...common}>
-            <path
-              d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M6 20C6 17.7909 7.79086 16 10 16H14C16.2091 16 18 17.7909 18 20"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )
-      default:
-        return null
-    }
-  }
+  // Icon component moved to shared `components/common/Icon`
 
   // Dashboard tab renderer (unchanged content, same as your code)
   const renderTabContent = () => {
@@ -699,257 +571,27 @@ const DashboardPage = () => {
         return (
           <div className={styles.formsContent}>
             {showFormBuilder ? (
-              <div className={styles.formBuilderContainer}>
-                <div className={styles.formBuilderHeader}>
-                  <h2>{editingForm ? "Edit Evaluation Form" : "Create New Evaluation Form"}</h2>
-                  <div className={styles.formBuilderActions}>
-                    <button className={styles.saveFormButton} onClick={saveForm}>
-                      Save Form
-                    </button>
-                    <button
-                      className={styles.cancelFormButton}
-                      onClick={() => {
-                        setShowFormBuilder(false)
-                        setEditingForm(null)
-                        resetFormBuilder()
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-                <div className={styles.formBuilderContent}>
-                  {/* Form Details */}
-                  <div className={styles.formBuilderSection}>
-                    <h3>Form Details</h3>
-                    <div className={styles.formBuilderGrid}>
-                      <div className={styles.formField}>
-                        <label>Form Title</label>
-                        <input
-                          type="text"
-                          value={formBuilder.title}
-                          onChange={(e) => setFormBuilder((prev) => ({ ...prev, title: e.target.value }))}
-                          placeholder="Enter form title"
-                          className={styles.formInput}
-                        />
-                      </div>
-                      <div className={styles.formField}>
-                        <label>Form Type</label>
-                        <select
-                          value={formBuilder.formType}
-                          onChange={(e) =>
-                            setFormBuilder((prev) => ({
-                              ...prev,
-                              formType: e.target.value,
-                              weight:
-                                e.target.value === "workrate"
-                                  ? 70
-                                  : e.target.value === "behavioral" && formBuilder.targetEvaluator === "admin"
-                                    ? 10
-                                    : e.target.value === "behavioral" && formBuilder.targetEvaluator === "peer"
-                                      ? 15
-                                      : e.target.value === "behavioral" && formBuilder.targetEvaluator === "self"
-                                        ? 5
-                                        : 0,
-                            }))
-                          }
-                          className={styles.formSelect}
-                        >
-                          {formTypes.map((type) => (
-                            <option key={type.id} value={type.id}>
-                              {type.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className={styles.formField}>
-                        <label>Target Evaluator</label>
-                        <select
-                          value={formBuilder.targetEvaluator}
-                          onChange={(e) =>
-                            setFormBuilder((prev) => ({
-                              ...prev,
-                              targetEvaluator: e.target.value,
-                              weight:
-                                prev.formType === "workrate"
-                                  ? 70
-                                  : e.target.value === "admin"
-                                    ? 10
-                                    : e.target.value === "peer"
-                                      ? 15
-                                      : 5,
-                            }))
-                          }
-                          className={styles.formSelect}
-                        >
-                          {evaluatorTypes.map((evaluator) => (
-                            <option key={evaluator.id} value={evaluator.id}>
-                              {evaluator.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className={styles.formField}>
-                        <label>Weight (%)</label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={formBuilder.weight}
-                          onChange={(e) =>
-                            setFormBuilder((prev) => ({ ...prev, weight: Number.parseInt(e.target.value) || 0 }))
-                          }
-                          className={styles.formInput}
-                          disabled={formBuilder.formType === "workrate"}
-                        />
-                      </div>
-                      <div className={styles.formField + " " + styles.fullWidth}>
-                        <label>Description</label>
-                        <textarea
-                          value={formBuilder.description}
-                          onChange={(e) => setFormBuilder((prev) => ({ ...prev, description: e.target.value }))}
-                          placeholder="Enter form description"
-                          className={styles.formTextarea}
-                          rows="3"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Section Builder */}
-                  <div className={styles.formBuilderSection}>
-                    <h3>Add Section</h3>
-                    <div className={styles.formBuilderGrid}>
-                      <div className={styles.formField}>
-                        <label>Section Name</label>
-                        <input
-                          type="text"
-                          value={currentSection.name}
-                          onChange={(e) => setCurrentSection((prev) => ({ ...prev, name: e.target.value }))}
-                          placeholder="Enter section name"
-                          className={styles.formInput}
-                        />
-                      </div>
-                      <div className={styles.formField}>
-                        <label>Section Weight (%)</label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={currentSection.weight}
-                          onChange={(e) =>
-                            setCurrentSection((prev) => ({ ...prev, weight: Number.parseInt(e.target.value) || 0 }))
-                          }
-                          placeholder="Enter weight percentage"
-                          className={styles.formInput}
-                          disabled={formBuilder.formType === "behavioral"}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Criteria Builder */}
-                    <div className={styles.criteriaBuilder}>
-                      <h4>Add Evaluation Criteria</h4>
-                      <div className={styles.criteriaInputs}>
-                        <div className={styles.formField}>
-                          <label>Criterion Name</label>
-                          <input
-                            type="text"
-                            value={currentCriterion.name}
-                            onChange={(e) => setCurrentCriterion((prev) => ({ ...prev, name: e.target.value }))}
-                            placeholder="Enter criterion name"
-                            className={styles.formInput}
-                          />
-                        </div>
-                        <div className={styles.formField}>
-                          <label>Criterion Weight (%)</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="100"
-                            value={currentCriterion.weight}
-                            onChange={(e) =>
-                              setCurrentCriterion((prev) => ({ ...prev, weight: Number.parseInt(e.target.value) || 0 }))
-                            }
-                            placeholder="Enter weight percentage"
-                            className={styles.formInput}
-                          />
-                        </div>
-                        <button onClick={addCriterionToSection} className={styles.addCriterionButton}>
-                          Add Criterion
-                        </button>
-                      </div>
-
-                      {/* Current Section Criteria */}
-                      {currentSection.criteria.length > 0 && (
-                        <div className={styles.currentCriteria}>
-                          <h5>Section Criteria:</h5>
-                          <div className={styles.criteriaList}>
-                            {currentSection.criteria.map((criterion) => (
-                              <div key={criterion.id} className={styles.criterionItem}>
-                                <span>
-                                  {criterion.name} ({criterion.weight}%)
-                                </span>
-                                <button
-                                  onClick={() => removeCriterionFromSection(criterion.id)}
-                                  className={styles.removeCriterionButton}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ))}
-                            <div className={styles.criteriaTotal}>
-                              Total: {currentSection.criteria.reduce((sum, c) => sum + c.weight, 0)}%
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <button
-                        onClick={addSectionToForm}
-                        className={styles.addSectionButton}
-                        disabled={
-                          !currentSection.name || currentSection.weight === 0 || currentSection.criteria.length === 0
-                        }
-                      >
-                        Add Section to Form
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Form Preview */}
-                  {formBuilder.sections.length > 0 && (
-                    <div className={styles.formBuilderSection}>
-                      <h3>Form Preview - Total Weight: {formBuilder.weight}%</h3>
-                      <div className={styles.formPreview}>
-                        {formBuilder.sections.map((section) => (
-                          <div key={section.id} className={styles.previewSection}>
-                            <div className={styles.previewSectionHeader}>
-                              <h4>{section.name}</h4>
-                              <div className={styles.previewSectionActions}>
-                                <span className={styles.sectionWeight}>{section.weight}%</span>
-                                <button
-                                  onClick={() => removeSectionFromForm(section.id)}
-                                  className={styles.removeSectionButton}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                            <div className={styles.previewCriteria}>
-                              {section.criteria.map((criterion) => (
-                                <div key={criterion.id} className={styles.previewCriterion}>
-                                  <span>{criterion.name}</span>
-                                  <span className={styles.criterionWeight}>{criterion.weight}%</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <FormBuilder
+                formTypes={formTypes}
+                evaluatorTypes={evaluatorTypes}
+                formBuilder={formBuilder}
+                setFormBuilder={setFormBuilder}
+                currentSection={currentSection}
+                setCurrentSection={setCurrentSection}
+                currentCriterion={currentCriterion}
+                setCurrentCriterion={setCurrentCriterion}
+                addCriterionToSection={addCriterionToSection}
+                removeCriterionFromSection={removeCriterionFromSection}
+                addSectionToForm={addSectionToForm}
+                removeSectionFromForm={removeSectionFromForm}
+                saveForm={saveForm}
+                cancel={() => {
+                  setShowFormBuilder(false)
+                  setEditingForm(null)
+                  resetFormBuilder()
+                }}
+                editingForm={editingForm}
+              />
             ) : (
               <>
                 <div className={styles.formsHeader}>
