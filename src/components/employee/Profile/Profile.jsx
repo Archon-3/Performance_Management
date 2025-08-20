@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import styles from "./profile.module.css";
+import styles from "./Profile.module.css";
 import HomePageStyles from "../../../pages/HomePage.module.css";
 
 const Profile = () => {

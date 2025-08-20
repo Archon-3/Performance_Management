@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
-import styles from "./peerEvaluation.module.css"
+import styles from "./PeerEvaluation.module.css"
 import HomePageStyles from "../../../pages/HomePage.module.css"
 
 const PeerEvaluation = () => {
