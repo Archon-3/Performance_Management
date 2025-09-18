@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { apiFetch } from "../lib/api"
 import styles from "./HomePage.module.css"
+import HomeMainLayout from "../components/layout/home/HomeMainLayout"
 
 const HomePage = () => {
   const [user, setUser] = useState({
@@ -204,11 +205,14 @@ const HomePage = () => {
           role: me.role === 'team_member' ? 'Team Member' : me.role,
           department: me.team?.name || '',
           avatar: "/assets/avatar-placeholder.png",
-          employeeId: me._id || me.id,
+          employeeId: me.employeeId,
+          profileImageId: me.profileImageId,
+          id: me._id || me.id,
         })
         
         console.log("Fetching evaluations...")
-        const evals = await apiFetch("/evaluations/member")
+        // Backend provides role-based listing at GET /api/evaluations
+        const evals = await apiFetch("/evaluations")
         console.log("Evaluations received:", evals)
         
         const completed = evals.filter(e => e.status === 'completed').length
@@ -245,338 +249,207 @@ const HomePage = () => {
   }
 
   return (
-    <div className={styles.homeContainer}>
-      {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
-        <div className={styles.sidebarHeader}>
-          <div className={styles.sidebarLogo}>
-            <img src="/astu_logo.svg" alt="ASTU Logo" className={styles.sidebarLogoImage} />
-            {isSidebarOpen && (
-              <div className={styles.sidebarTitle}>
-                <h3>PMS</h3>
-                <p>ASTU</p>
+    <HomeMainLayout
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      isMobile={isMobile}
+      user={user}
+      navLinks={navLinks}
+      activePopout={activePopout}
+      togglePopout={togglePopout}
+    >
+      {/* Welcome Section */}
+      <section className={styles.welcomeSection}>
+        <div className={styles.welcomeCard}>
+          <div className={styles.welcomeContent}>
+            <h2>Welcome back, {user.name.split(" ")[0]}</h2>
+            <p>Here's an overview of your performance management activities</p>
+            <div className={styles.welcomeStats}>
+              <div className={styles.welcomeStat}>
+                <span>Employee ID</span>
+                <strong>{user.employeeId}</strong>
               </div>
-            )}
+              <div className={styles.welcomeStat}>
+                <span>Department</span>
+                <strong>{user.department}</strong>
+              </div>
+            </div>
           </div>
-          <button className={styles.sidebarToggle} onClick={toggleSidebar}>
-            {isSidebarOpen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12H20M20 12L13 5M20 12L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
         </div>
-        
-        <nav className={styles.sidebarNav}>
-          <ul>
-            {navLinks.map((link, index) => (
-              <li key={index}>
-                <div className={styles.navItemContainer}>
-                  <Link 
-                    to={link.link} 
-                    className={`${styles.navLink} ${link.active ? styles.active : ''}`}
-                    onClick={(e) => {
-                      if (link.hasPopout) {
-                        e.preventDefault()
-                        togglePopout(link.title)
-                      }
-                    }}
-                  >
-                    <div className={styles.navIcon}>{link.icon}</div>
-                    {isSidebarOpen && <span>{link.title}</span>}
-                    {link.hasPopout && isSidebarOpen && (
-                      <div className={styles.chevronIcon}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                    )}
-                  </Link>
-                  
-                  {link.hasPopout && activePopout === link.title && (
-                    <div className={styles.popoutMenu}>
-                      {link.popoutItems.map((item, idx) => (
-                        <Link 
-                          key={idx} 
-                          to={item.link} 
-                          className={styles.popoutItem}
-                        >
-                          {item.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        {isSidebarOpen && (
-          <div className={styles.sidebarFooter}>
-            <div className={styles.userInfo}>
-              <img 
-                src={user.avatar} 
-                alt="User Avatar" 
-                className={styles.userAvatar} 
-              />
-              <div>
-                <h4>{user.name.split(" ")[0]}</h4>
-                <p>{user.role}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </aside>
+      </section>
 
-      {/* Main Content Wrapper */}
-      <div className={`${styles.mainWrapper} ${!isSidebarOpen ? styles.mainWrapperFull : ''}`}>
-        {/* Header */}
-        <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <div className={styles.headerLeft}>
-              {isMobile && (
-                <button className={styles.mobileMenuButton} onClick={toggleSidebar}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Stats Grid */}
+      <section className={styles.statsSection}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
+              <div className={styles.statHeader}>
+                <h3>Total Evaluations</h3>
+                <div className={styles.statIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 17V7M15 17V12M21 21H3V3H21V21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </button>
-              )}
-              <div className={styles.systemTitle}>
-                <h1>Performance Management System</h1>
-                <p>Adama Science & Technology University</p>
+                </div>
               </div>
-            </div>
-
-            <div className={styles.userSection}>
-              <div className={styles.userInfo}>
-                <span className={styles.userName}>{user.name}</span>
-                <span className={styles.userRole}>{user.role}</span>
-              </div>
-              <div className={styles.avatarContainer}>
-                <img 
-                  src={user.avatar} 
-                  alt="User Avatar" 
-                  className={styles.userAvatar} 
-                />
-                <div className={styles.statusIndicator}></div>
-              </div>
+              <div className={styles.statValue}>{isLoading ? '...' : stats.totalEvaluations}</div>
+              <div className={styles.statTrend}>+2 from last quarter</div>
             </div>
           </div>
-        </header>
 
-        {/* Main Content */}
-        <main className={styles.mainContent}>
-          {/* Welcome Section */}
-          <section className={styles.welcomeSection}>
-            <div className={styles.welcomeCard}>
-              <div className={styles.welcomeContent}>
-                <h2>Welcome back, {user.name.split(" ")[0]}</h2>
-                <p>Here's an overview of your performance management activities</p>
-                <div className={styles.welcomeStats}>
-                  <div className={styles.welcomeStat}>
-                    <span>Employee ID</span>
-                    <strong>{user.employeeId}</strong>
-                  </div>
-                  <div className={styles.welcomeStat}>
-                    <span>Department</span>
-                    <strong>{user.department}</strong>
-                  </div>
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
+              <div className={styles.statHeader}>
+                <h3>Pending Reviews</h3>
+                <div className={styles.statIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8V12V8ZM12 16H12.01H12ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* Stats Grid */}
-          <section className={styles.statsSection}>
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <div className={styles.statContent}>
-                  <div className={styles.statHeader}>
-                    <h3>Total Evaluations</h3>
-                    <div className={styles.statIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 17V7M15 17V12M21 21H3V3H21V21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <div className={styles.statValue}>{isLoading ? '...' : stats.totalEvaluations}</div>
-                  <div className={styles.statTrend}>+2 from last quarter</div>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statContent}>
-                  <div className={styles.statHeader}>
-                    <h3>Pending Reviews</h3>
-                    <div className={styles.statIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 8V12V8ZM12 16H12.01H12ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <div className={styles.statValue}>{isLoading ? '...' : stats.pendingEvaluations}</div>
-                  <div className={styles.statTrend}>Due soon</div>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statContent}>
-                  <div className={styles.statHeader}>
-                    <h3>Completed</h3>
-                    <div className={styles.statIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <div className={styles.statValue}>{isLoading ? '...' : stats.completedEvaluations}</div>
-                  <div className={styles.statTrend}>This year</div>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statContent}>
-                  <div className={styles.statHeader}>
-                    <h3>Average Score</h3>
-                    <div className={styles.statIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.049 2.927C11.349 2.006 12.652 2.006 12.952 2.927L14.469 7.601C14.603 8.015 14.988 8.291 15.421 8.291H20.335C21.304 8.291 21.706 9.531 20.923 10.101L16.947 12.989C16.597 13.244 16.449 13.695 16.583 14.108L18.1 18.782C18.401 19.703 17.347 20.469 16.564 19.899L12.588 17.011C12.238 16.756 11.763 16.756 11.413 17.011L7.436 19.899C6.653 20.469 5.6 19.703 5.901 18.782L7.418 14.108C7.552 13.695 7.404 13.244 7.054 12.989L3.077 10.101C2.294 9.531 2.697 8.291 3.666 8.291H8.58C9.013 8.291 9.397 8.015 9.532 7.601L11.049 2.927Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <div className={styles.statValue}>{isLoading ? '...' : `${stats.averageScore}/5`}</div>
-                  <div className={styles.statTrend}>+0.3 from last quarter</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Two Column Layout for Actions and Activities */}
-          <div className={styles.twoColumnGrid}>
-            {/* Quick Actions */}
-            <section className={styles.quickActionsSection}>
-              <h3 className={styles.sectionTitle}>
-                Quick Actions
-                <span className={styles.sectionDivider}></span>
-              </h3>
-              <div className={styles.actionsGrid}>
-                {quickActions.map((action, index) => (
-                  <Link
-                    key={index}
-                    to={action.link}
-                    className={styles.actionCard}
-                  >
-                    <div className={styles.actionIcon}>
-                      {action.icon}
-                    </div>
-                    <div className={styles.actionContent}>
-                      <h4>{action.title}</h4>
-                      <p>{action.description}</p>
-                    </div>
-                    <div className={styles.actionArrow}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Recent Activities */}
-            <section className={styles.activitiesSection}>
-              <h3 className={styles.sectionTitle}>
-                Recent Activities
-                <span className={styles.sectionDivider}></span>
-              </h3>
-              <div className={styles.activitiesList}>
-                {isLoading ? (
-                  <div className={styles.loadingState}>
-                    <div className={styles.loadingPulse}></div>
-                    <p>Loading activities...</p>
-                  </div>
-                ) : recentActivities.length > 0 ? (
-                  recentActivities.map((activity) => (
-                    <div key={activity.id} className={styles.activityItem}>
-                      <div className={styles.activityIcon}>
-                        {activity.icon}
-                      </div>
-                      <div className={styles.activityContent}>
-                        <div className={styles.activityHeader}>
-                          <h4>{activity.title}</h4>
-                          <span className={styles.activityTime}>{activity.time}</span>
-                        </div>
-                        <p>{activity.description}</p>
-                        <div className={`${styles.activityStatus} ${styles[activity.status]}`}>
-                          {activity.status === 'new' ? 'New' : 
-                          activity.status === 'pending' ? 'Pending' : 'Completed'}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className={styles.emptyState}>
-                    <p>No recent activities found.</p>
-                  </div>
-                )}
-              </div>
-            </section>
-          </div>
-
-          {/* Performance Overview */}
-          <section className={styles.performanceSection}>
-            <h3 className={styles.sectionTitle}>
-              Performance Overview
-              <span className={styles.sectionDivider}></span>
-            </h3>
-            <div className={styles.performanceCard}>
-              <div className={styles.performanceHeader}>
-                <h4>Current Quarter Progress</h4>
-                <span className={styles.performanceScore}>{stats.currentQuarterScore ?? 0}%</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
-                  style={{ width: `${stats.currentQuarterScore ?? 0}%` }}
-                ></div>
-              </div>
-              <div className={styles.performanceChart}>
-                <h4>Quarterly Performance Trend</h4>
-                <div className={styles.chartBars}>
-                  {demoPerformanceData.map((item, index) => (
-                    <div key={index} className={styles.chartBarContainer}>
-                      <div 
-                        className={styles.chartBar} 
-                        style={{ height: `${item.score}%` }}
-                      ></div>
-                      <span className={styles.chartLabel}>{item.quarter}</span>
-                      <span className={styles.chartValue}>{item.score}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        </main>
-
-        {/* Footer */}
-        <footer className={styles.footer}>
-          <div className={styles.footerContent}>
-            <p>&copy; {new Date().getFullYear()} Adama Science & Technology University. All rights reserved.</p>
-            <div className={styles.footerLinks}>
-              <Link to="/help">Help</Link>
-              <Link to="/privacy">Privacy</Link>
-              <Link to="/terms">Terms</Link>
+              <div className={styles.statValue}>{isLoading ? '...' : stats.pendingEvaluations}</div>
+              <div className={styles.statTrend}>Due soon</div>
             </div>
           </div>
-        </footer>
+
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
+              <div className={styles.statHeader}>
+                <h3>Completed</h3>
+                <div className={styles.statIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div className={styles.statValue}>{isLoading ? '...' : stats.completedEvaluations}</div>
+              <div className={styles.statTrend}>This year</div>
+            </div>
+          </div>
+
+          <div className={styles.statCard}>
+            <div className={styles.statContent}>
+              <div className={styles.statHeader}>
+                <h3>Average Score</h3>
+                <div className={styles.statIcon}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.049 2.927C11.349 2.006 12.652 2.006 12.952 2.927L14.469 7.601C14.603 8.015 14.988 8.291 15.421 8.291H20.335C21.304 8.291 21.706 9.531 20.923 10.101L16.947 12.989C16.597 13.244 16.449 13.695 16.583 14.108L18.1 18.782C18.401 19.703 17.347 20.469 16.564 19.899L12.588 17.011C12.238 16.756 11.763 16.756 11.413 17.011L7.436 19.899C6.653 20.469 5.6 19.703 5.901 18.782L7.418 14.108C7.552 13.695 7.404 13.244 7.054 12.989L3.077 10.101C2.294 9.531 2.697 8.291 3.666 8.291H8.58C9.013 8.291 9.397 8.015 9.532 7.601L11.049 2.927Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div className={styles.statValue}>{isLoading ? '...' : `${stats.averageScore}/5`}</div>
+              <div className={styles.statTrend}>+0.3 from last quarter</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Two Column Layout for Actions and Activities */}
+      <div className={styles.twoColumnGrid}>
+        {/* Quick Actions */}
+        <section className={styles.quickActionsSection}>
+          <h3 className={styles.sectionTitle}>
+            Quick Actions
+            <span className={styles.sectionDivider}></span>
+          </h3>
+          <div className={styles.actionsGrid}>
+            {quickActions.map((action, index) => (
+              <Link
+                key={index}
+                to={action.link}
+                className={styles.actionCard}
+              >
+                <div className={styles.actionIcon}>
+                  {action.icon}
+                </div>
+                <div className={styles.actionContent}>
+                  <h4>{action.title}</h4>
+                  <p>{action.description}</p>
+                </div>
+                <div className={styles.actionArrow}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* Recent Activities */}
+        <section className={styles.activitiesSection}>
+          <h3 className={styles.sectionTitle}>
+            Recent Activities
+            <span className={styles.sectionDivider}></span>
+          </h3>
+          <div className={styles.activitiesList}>
+            {isLoading ? (
+              <div className={styles.loadingState}>
+                <div className={styles.loadingPulse}></div>
+                <p>Loading activities...</p>
+              </div>
+            ) : recentActivities.length > 0 ? (
+              recentActivities.map((activity) => (
+                <div key={activity.id} className={styles.activityItem}>
+                  <div className={styles.activityIcon}>
+                    {activity.icon}
+                  </div>
+                  <div className={styles.activityContent}>
+                    <div className={styles.activityHeader}>
+                      <h4>{activity.title}</h4>
+                      <span className={styles.activityTime}>{activity.time}</span>
+                    </div>
+                    <p>{activity.description}</p>
+                    <div className={`${styles.activityStatus} ${styles[activity.status]}`}>
+                      {activity.status === 'new' ? 'New' : 
+                      activity.status === 'pending' ? 'Pending' : 'Completed'}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No recent activities found.</p>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
-    </div>
+
+      {/* Performance Overview */}
+      <section className={styles.performanceSection}>
+        <h3 className={styles.sectionTitle}>
+          Performance Overview
+          <span className={styles.sectionDivider}></span>
+        </h3>
+        <div className={styles.performanceCard}>
+          <div className={styles.performanceHeader}>
+            <h4>Current Quarter Progress</h4>
+            <span className={styles.performanceScore}>{stats.currentQuarterScore ?? 0}%</span>
+          </div>
+          <div className={styles.progressBar}>
+            <div 
+              className={styles.progressFill} 
+              style={{ width: `${stats.currentQuarterScore ?? 0}%` }}
+            ></div>
+          </div>
+          <div className={styles.performanceChart}>
+            <h4>Quarterly Performance Trend</h4>
+            <div className={styles.chartBars}>
+              {demoPerformanceData.map((item, index) => (
+                <div key={index} className={styles.chartBarContainer}>
+                  <div 
+                    className={styles.chartBar} 
+                    style={{ height: `${item.score}%` }}
+                  ></div>
+                  <span className={styles.chartLabel}>{item.quarter}</span>
+                  <span className={styles.chartValue}>{item.score}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </HomeMainLayout>
   )
 }
 

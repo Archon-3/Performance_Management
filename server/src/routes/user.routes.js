@@ -25,17 +25,19 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 // Current user profile
-router.get("/me", requireAuth, async (req, res) => {
-  console.log("User requesting profile:", req.user.id, req.user.role);
-  
-  if (req.user.id === "admin") {
-    return res.json({ id: "admin", email: process.env.ADMIN_EMAIL, role: USER_ROLES.ADMIN, firstName: "Admin", lastName: "User" })
+router.get("/me", requireAuth, async (req, res, next) => {
+  try {
+    console.log("User requesting profile:", req.user.id, req.user.role);
+    if (req.user.id === "admin") {
+      return res.json({ id: "admin", email: process.env.ADMIN_EMAIL, role: USER_ROLES.ADMIN, firstName: "Admin", lastName: "User" })
+    }
+    const user = await User.findById(req.user.id).populate("team", "name members leader").lean()
+    if (!user) return res.status(404).json({ message: "Not found" })
+    console.log("User found:", user.role, user.firstName, user.lastName);
+    res.json(user)
+  } catch (e) {
+    next(e)
   }
-  const user = await User.findById(req.user.id).populate("team", "name members leader")
-  if (!user) return res.status(404).json({ message: "Not found" })
-  
-  console.log("User found:", user.role, user.firstName, user.lastName);
-  res.json(user)
 })
 
 // Create user (admin only)
@@ -104,9 +106,13 @@ router.post("/:id/change-password", requireAuth, async (req, res) => {
 })
 
 // List, view, update, delete
-router.get("/", requireAuth, requireRole(USER_ROLES.ADMIN), async (req, res) => {
-  const users = await User.find().populate("team", "name")
-  res.json(users)
+router.get("/", requireAuth, requireRole(USER_ROLES.ADMIN), async (req, res, next) => {
+  try {
+    const users = await User.find().populate("team", "name").lean()
+    res.json(users)
+  } catch (e) {
+    next(e)
+  }
 })
 
 router.get("/:id", requireAuth, async (req, res) => {

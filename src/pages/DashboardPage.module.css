@@ -1,132 +1,12 @@
 /* DashboardPage.module.css */
 
-/* Base Styles */
-.dashboardContainer {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #314970;
-  color: #1f2937;
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.5;
-}
+/* Base layout container moved to TLMainLayout.module.css */
 
-/* Header Styles */
-.header {
-  background-color: #314970;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 1rem 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
+/* Header styles moved to TLHeader.module.css */
 
-.headerContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Navigation styles moved to TL layouts */
 
-.logoSection {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logo {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.375rem;
-  object-fit: cover;
-}
-
-.systemTitle h1 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  color: #111827;
-}
-
-.systemTitle p {
-  font-size: 0.875rem;
-  margin: 0;
-  color: #6b7280;
-}
-
-.userSection {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.userInfo {
-  text-align: right;
-}
-
-.userName {
-  display: block;
-  font-weight: 500;
-  color: #111827;
-}
-
-.userRole {
-  display: block;
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.userAvatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #3b82f6;
-}
-
-/* Navigation Styles */
-.navigation {
-  background-color: #314970;
-  border-bottom: 1px solid #314970;
-}
-
-.navTabs {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-}
-
-.navTab {
-  padding: 1rem 1.5rem;
-  border: none;
-  background: none;
-  color: #314970;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.navTab:hover {
-  color: #3b82f6;
-  background-color: #314970;
-}
-
-.navTab.active {
-  color: #3b82f6;
-  border-bottom-color: #314970;
-  background-color: #314970;
-}
-
-/* Main Content Styles */
-.mainContent {
-  flex: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem;
-  width: 100%;
-}
+/* Main content layout handled by TLMainLayout.module.css */
 
 /* Overview Styles */
 .overviewContent {
@@ -1203,39 +1083,7 @@
   background-color: #314970;
 }
 
-/* Footer Styles */
-.footer {
-  background-color: #ffffff;
-  border-top: 1px solid #e5e7eb;
-  padding: 1rem 0;
-  margin-top: auto;
-}
-
-.footerContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.footerLinks {
-  display: flex;
-  gap: 1rem;
-}
-
-.footerLinks a {
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.footerLinks a:hover {
-  text-decoration: underline;
-}
+/* Footer styles moved to TLFooter.module.css */
 
 /* Employee Registration Styles */
 .registrationContainer {

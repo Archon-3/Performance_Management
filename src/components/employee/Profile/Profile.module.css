@@ -87,6 +87,53 @@
   margin: 0;
 }
 
+/* Avatar Section */
+.avatarSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.avatarPreview {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.avatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius-md);
+  background: var(--primary-color);
+  color: var(--white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.avatarButton:hover {
+  background: var(--primary-light);
+}
+
+.avatarHint {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
 /* Success Message */
 .successMessage {
   display: flex;

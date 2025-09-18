@@ -38,4 +38,7 @@ export function logout() {
   localStorage.removeItem("userId")
 }
 
-
+export function uploadUrl(fileId) {
+  if (!fileId) return "/assets/avatar-placeholder.png"
+  return `${API_BASE.replace('/api', '')}/uploads/${fileId}`
+}

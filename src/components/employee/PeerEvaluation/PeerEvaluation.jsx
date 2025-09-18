@@ -1,30 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom"
-import styles from "./peerEvaluation.module.css"
-import HomePageStyles from "../../../pages/HomePage.module.css"
+import { useLocation } from "react-router-dom"
+import { apiFetch } from "../../../lib/api"
+import styles from "./PeerEvaluation.module.css"
+import HomeMainLayout from "../../layout/home/HomeMainLayout"
 
 const PeerEvaluation = () => {
   const [user, setUser] = useState({
-    name: "Samuel Hailu Demse",
-    role: "Software Programmer IV",
-    department: "Information Communication Technology",
+    name: "",
+    role: "",
+    department: "",
     avatar: "/assets/avatar-placeholder.png",
-    employeeId: "ASTU-ICT-001"
+    employeeId: ""
   })
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [activePopout, setActivePopout] = useState(null)
   const location = useLocation()
-
-  const [selectedPeers, setSelectedPeers] = useState([])
-  const [availablePeers, setAvailablePeers] = useState([])
-  const [activePeerIndex, setActivePeerIndex] = useState(null)
-  const [formConfig, setFormConfig] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [success, setSuccess] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const togglePopout = (item) => {
     if (activePopout === item) {
@@ -33,6 +26,14 @@ const PeerEvaluation = () => {
       setActivePopout(item)
     }
   }
+
+  const [selectedPeers, setSelectedPeers] = useState([])
+  const [availablePeers, setAvailablePeers] = useState([])
+  const [activePeerIndex, setActivePeerIndex] = useState(null)
+  const [formConfig, setFormConfig] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [success, setSuccess] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navLinks = [
     {
@@ -114,6 +115,27 @@ const PeerEvaluation = () => {
       ]
     },
   ]
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const me = await apiFetch("/users/me")
+        const fullName = `${me.firstName || ''} ${me.lastName || ''}`.trim() || me.email
+        setUser({
+          name: fullName,
+          role: me.role === 'team_member' ? 'Team Member' : (me.role === 'team_leader' ? 'Team Leader' : me.role),
+          department: me.team?.name || '',
+          avatar: "/assets/avatar-placeholder.png",
+          employeeId: me.employeeId || '',
+          profileImageId: me.profileImageId,
+          id: me._id || me.id || ''
+        })
+      } catch (err) {
+        console.error("Failed to load current user:", err)
+      }
+    }
+    loadUser()
+  }, [])
 
   useEffect(() => {
     const checkIfMobile = () => {
@@ -246,433 +268,183 @@ const PeerEvaluation = () => {
 
   if (loading) {
     return (
-      <div className={HomePageStyles.homeContainer}>
-        {/* Sidebar */}
-        <aside className={`${HomePageStyles.sidebar} ${isSidebarOpen ? HomePageStyles.sidebarOpen : ''}`}>
-          <div className={HomePageStyles.sidebarHeader}>
-            <div className={HomePageStyles.sidebarLogo}>
-              <img src="/astu_logo.svg" alt="ASTU Logo" className={HomePageStyles.sidebarLogoImage} />
-              {isSidebarOpen && (
-                <div className={HomePageStyles.sidebarTitle}>
-                  <h3>PMS</h3>
-                  <p>ASTU</p>
-                </div>
-              )}
-            </div>
-            <button className={HomePageStyles.sidebarToggle} onClick={toggleSidebar}>
-              {isSidebarOpen ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 12H20M20 12L13 5M20 12L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
-            </button>
-          </div>
-          
-          <nav className={HomePageStyles.sidebarNav}>
-            <ul>
-              {navLinks.map((link, index) => (
-                <li key={index}>
-                  <div className={HomePageStyles.navItemContainer}>
-                    <Link 
-                      to={link.link} 
-                      className={`${HomePageStyles.navLink} ${link.active ? HomePageStyles.active : ''}`}
-                      onClick={(e) => {
-                        if (link.hasPopout) {
-                          e.preventDefault()
-                          togglePopout(link.title)
-                        }
-                      }}
-                    >
-                      <div className={HomePageStyles.navIcon}>{link.icon}</div>
-                      {isSidebarOpen && <span>{link.title}</span>}
-                      {link.hasPopout && isSidebarOpen && (
-                        <div className={HomePageStyles.chevronIcon}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      )}
-                    </Link>
-                    
-                    {link.hasPopout && activePopout === link.title && (
-                      <div className={HomePageStyles.popoutMenu}>
-                        {link.popoutItems.map((item, idx) => (
-                          <Link 
-                            key={idx} 
-                            to={item.link} 
-                            className={HomePageStyles.popoutItem}
-                          >
-                            {item.title}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          
-          {isSidebarOpen && (
-            <div className={HomePageStyles.sidebarFooter}>
-              <div className={HomePageStyles.userInfo}>
-                <img 
-                  src={user.avatar} 
-                  alt="User Avatar" 
-                  className={HomePageStyles.userAvatar} 
-                />
-                <div>
-                  <h4>{user.name.split(" ")[0]}</h4>
-                  <p>{user.role}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </aside>
-
-        {/* Main Content Wrapper */}
-        <div className={`${HomePageStyles.mainWrapper} ${!isSidebarOpen ? HomePageStyles.mainWrapperFull : ''}`}>
-          {/* Header */}
-          <header className={HomePageStyles.header}>
-            <div className={HomePageStyles.headerContent}>
-              <div className={HomePageStyles.headerLeft}>
-                {isMobile && (
-                  <button className={HomePageStyles.mobileMenuButton} onClick={toggleSidebar}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                )}
-                <div className={HomePageStyles.systemTitle}>
-                  <h1>Performance Management System</h1>
-                  <p>Adama Science & Technology University</p>
-                </div>
-              </div>
-
-              <div className={HomePageStyles.userSection}>
-                <div className={HomePageStyles.userInfo}>
-                  <span className={HomePageStyles.userName}>{user.name}</span>
-                  <span className={HomePageStyles.userRole}>{user.role}</span>
-                </div>
-                <div className={HomePageStyles.avatarContainer}>
-                  <img 
-                    src={user.avatar} 
-                    alt="User Avatar" 
-                    className={HomePageStyles.userAvatar} 
-                  />
-                  <div className={HomePageStyles.statusIndicator}></div>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className={HomePageStyles.mainContent}>
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner}></div>
-              <p>Loading evaluation form...</p>
-            </div>
-          </main>
+      <HomeMainLayout
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+        user={user}
+        navLinks={navLinks}
+        activePopout={activePopout}
+        togglePopout={(item) => setActivePopout(prev => (prev === item ? null : item))}
+      >
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading evaluation form...</p>
         </div>
-      </div>
+      </HomeMainLayout>
     )
   }
 
   return (
-    <div className={HomePageStyles.homeContainer}>
-      {/* Sidebar */}
-      <aside className={`${HomePageStyles.sidebar} ${isSidebarOpen ? HomePageStyles.sidebarOpen : ''}`}>
-        <div className={HomePageStyles.sidebarHeader}>
-          <div className={HomePageStyles.sidebarLogo}>
-            <img src="/astu_sidebar_logo.png" alt="ASTU Logo" className={HomePageStyles.sidebarLogoImage} />
-            {isSidebarOpen && (
-              <div className={HomePageStyles.sidebarTitle}>
-                <h3>PMS</h3>
-                <p>ASTU</p>
-              </div>
-            )}
-          </div>
-          <button className={HomePageStyles.sidebarToggle} onClick={toggleSidebar}>
-            {isSidebarOpen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12H20M20 12L13 5M20 12L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
+    <HomeMainLayout
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      isMobile={isMobile}
+      user={user}
+      navLinks={navLinks}
+      activePopout={activePopout}
+      togglePopout={(item) => setActivePopout(prev => (prev === item ? null : item))}
+    >
+      <section className={styles.contentSection}>
+        <div className={styles.headerSection}>
+          <h2 className={styles.pageTitle}>Peer Evaluation</h2>
+          <p className={styles.pageSubtitle}>Select and evaluate your peers</p>
         </div>
         
-        <nav className={HomePageStyles.sidebarNav}>
-          <ul>
-            {navLinks.map((link, index) => (
-              <li key={index}>
-                <div className={HomePageStyles.navItemContainer}>
-                  <Link 
-                    to={link.link} 
-                    className={`${HomePageStyles.navLink} ${link.active ? HomePageStyles.active : ''}`}
-                    onClick={(e) => {
-                      if (link.hasPopout) {
-                        e.preventDefault()
-                        togglePopout(link.title)
-                      }
-                    }}
-                  >
-                    <div className={HomePageStyles.navIcon}>{link.icon}</div>
-                    {isSidebarOpen && <span>{link.title}</span>}
-                    {link.hasPopout && isSidebarOpen && (
-                      <div className={HomePageStyles.chevronIcon}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                    )}
-                  </Link>
-                  
-                  {link.hasPopout && activePopout === link.title && (
-                    <div className={HomePageStyles.popoutMenu}>
-                      {link.popoutItems.map((item, idx) => (
-                        <Link 
-                          key={idx} 
-                          to={item.link} 
-                          className={HomePageStyles.popoutItem}
-                        >
-                          {item.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        {isSidebarOpen && (
-          <div className={HomePageStyles.sidebarFooter}>
-            <div className={HomePageStyles.userInfo}>
-              <img 
-                src={user.avatar} 
-                alt="User Avatar" 
-                className={HomePageStyles.userAvatar} 
-              />
-              <div>
-                <h4>{user.name.split(" ")[0]}</h4>
-                <p>{user.role}</p>
-              </div>
-            </div>
+        {success && (
+          <div className={styles.successMessage}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span>{success}</span>
           </div>
         )}
-      </aside>
 
-      {/* Main Content Wrapper */}
-      <div className={`${HomePageStyles.mainWrapper} ${!isSidebarOpen ? HomePageStyles.mainWrapperFull : ''}`}>
-        {/* Header */}
-        <header className={HomePageStyles.header}>
-          <div className={HomePageStyles.headerContent}>
-            <div className={HomePageStyles.headerLeft}>
-              {isMobile && (
-                <button className={HomePageStyles.mobileMenuButton} onClick={toggleSidebar}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              )}
-              <div className={HomePageStyles.systemTitle}>
-                <h1>Performance Management System</h1>
-                <p>Adama Science & Technology University</p>
-              </div>
-            </div>
-
-            <div className={HomePageStyles.userSection}>
-              <div className={HomePageStyles.userInfo}>
-                <span className={HomePageStyles.userName}>{user.name}</span>
-                <span className={HomePageStyles.userRole}>{user.role}</span>
-              </div>
-              <div className={HomePageStyles.avatarContainer}>
-                <img 
-                  src={user.avatar} 
-                  alt="User Avatar" 
-                  className={HomePageStyles.userAvatar} 
-                />
-                <div className={HomePageStyles.statusIndicator}></div>
-              </div>
+        <div className={styles.peerEvaluationContainer}>
+          <div className={styles.peerSelectionPanel}>
+            <h3 className={styles.panelTitle}>Select Peers to Evaluate</h3>
+            <div className={styles.peerList}>
+              {availablePeers.map((peer) => (
+                <div key={peer.id} className={styles.peerCard} onClick={() => handleSelectPeer(peer)}>
+                  <div className={styles.peerAvatar}>
+                    <span>{peer.name.charAt(0)}</span>
+                  </div>
+                  <div className={styles.peerInfo}>
+                    <h4>{peer.name}</h4>
+                    <p>{peer.role}</p>
+                    <span className={styles.peerDepartment}>{peer.department}</span>
+                  </div>
+                  <button className={styles.addPeerButton}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        </header>
 
-        {/* Main Content */}
-        <main className={HomePageStyles.mainContent}>
-          <section className={styles.contentSection}>
-            <div className={styles.headerSection}>
-              <h2 className={styles.pageTitle}>Peer Evaluation</h2>
-              <p className={styles.pageSubtitle}>Select and evaluate your peers</p>
-            </div>
+          <div className={styles.evaluationPanel}>
+            <h3 className={styles.panelTitle}>Selected Peers</h3>
             
-            {success && (
-              <div className={styles.successMessage}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            {selectedPeers.length === 0 ? (
+              <div className={styles.emptyState}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>{success}</span>
+                <p>No peers selected yet. Please select peers from the list to evaluate.</p>
               </div>
-            )}
-
-            <div className={styles.peerEvaluationContainer}>
-              <div className={styles.peerSelectionPanel}>
-                <h3 className={styles.panelTitle}>Select Peers to Evaluate</h3>
-                <div className={styles.peerList}>
-                  {availablePeers.map((peer) => (
-                    <div key={peer.id} className={styles.peerCard} onClick={() => handleSelectPeer(peer)}>
-                      <div className={styles.peerAvatar}>
-                        <span>{peer.name.charAt(0)}</span>
-                      </div>
-                      <div className={styles.peerInfo}>
-                        <h4>{peer.name}</h4>
-                        <p>{peer.role}</p>
-                        <span className={styles.peerDepartment}>{peer.department}</span>
-                      </div>
-                      <button className={styles.addPeerButton}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            ) : (
+              <>
+                <div className={styles.selectedPeerTabs}>
+                  {selectedPeers.map((peer, index) => (
+                    <div 
+                      key={peer.id}
+                      className={`${styles.peerTab} ${activePeerIndex === index ? styles.activeTab : ''}`}
+                      onClick={() => setActivePeerIndex(index)}
+                    >
+                      <span>{peer.name}</span>
+                      <button 
+                        className={styles.removePeerButton} 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemovePeer(index)
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       </button>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className={styles.evaluationPanel}>
-                <h3 className={styles.panelTitle}>Selected Peers</h3>
-                
-                {selectedPeers.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <p>No peers selected yet. Please select peers from the list to evaluate.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className={styles.selectedPeerTabs}>
-                      {selectedPeers.map((peer, index) => (
-                        <div 
-                          key={peer.id}
-                          className={`${styles.peerTab} ${activePeerIndex === index ? styles.activeTab : ''}`}
-                          onClick={() => setActivePeerIndex(index)}
-                        >
-                          <span>{peer.name}</span>
-                          <button 
-                            className={styles.removePeerButton} 
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleRemovePeer(index)
-                            }}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
+                {activePeerIndex !== null && (
+                  <div className={styles.evaluationForm}>
+                    <div className={styles.activePeerHeader}>
+                      <h4>Evaluating: {selectedPeers[activePeerIndex].name}</h4>
+                      <p>{selectedPeers[activePeerIndex].role} | {selectedPeers[activePeerIndex].department}</p>
                     </div>
 
-                    {activePeerIndex !== null && (
-                      <div className={styles.evaluationForm}>
-                        <div className={styles.activePeerHeader}>
-                          <h4>Evaluating: {selectedPeers[activePeerIndex].name}</h4>
-                          <p>{selectedPeers[activePeerIndex].role} | {selectedPeers[activePeerIndex].department}</p>
-                        </div>
-
-                        <form onSubmit={handleSubmit}>
-                          <div className={styles.evaluationTableContainer}>
-                            <table className={styles.evaluationTable}>
-                              <thead>
-                                <tr>
-                                  <th className={styles.tableHeader}>No</th>
-                                  <th className={styles.tableHeader}>Behavioral Indicators</th>
-                                  <th className={styles.tableHeader}>Weight</th>
-                                  <th className={styles.tableHeader}>Rating</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {formConfig?.sections[0].criteria.map((criterion, index) => (
-                                  <tr key={criterion.id} className={styles.tableRow}>
-                                    <td className={styles.tableCell}>{index + 1}</td>
-                                    <td className={styles.tableCell}>{criterion.name}</td>
-                                    <td className={styles.tableCell}>{criterion.weight}%</td>
-                                    <td className={styles.tableCell}>
-                                      <select
-                                        value={selectedPeers[activePeerIndex].ratings[criterion.id] || ""}
-                                        onChange={(e) => handleRatingChange(activePeerIndex, criterion.id, e.target.value)}
-                                        className={styles.ratingSelect}
-                                        required
-                                      >
-                                        <option value="">Select</option>
-                                        {formConfig.ratingScale.map((scale) => (
-                                          <option key={scale.value} value={scale.value}>
-                                            {scale.value} - {scale.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className={styles.formActions}>
-                            <button 
-                              type="submit" 
-                              className={styles.submitButton}
-                              disabled={isSubmitting}
-                            >
-                              {isSubmitting ? (
-                                <>
-                                  <svg className={styles.spinner} viewBox="0 0 50 50">
-                                    <circle className={styles.path} cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle>
-                                  </svg>
-                                  Submitting...
-                                </>
-                              ) : (
-                                "Submit Evaluation"
-                              )}
-                            </button>
-                          </div>
-                        </form>
+                    <form onSubmit={handleSubmit}>
+                      <div className={styles.evaluationTableContainer}>
+                        <table className={styles.evaluationTable}>
+                          <thead>
+                            <tr>
+                              <th className={styles.tableHeader}>No</th>
+                              <th className={styles.tableHeader}>Behavioral Indicators</th>
+                              <th className={styles.tableHeader}>Weight</th>
+                              <th className={styles.tableHeader}>Rating</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {formConfig?.sections[0].criteria.map((criterion, index) => (
+                              <tr key={criterion.id} className={styles.tableRow}>
+                                <td className={styles.tableCell}>{index + 1}</td>
+                                <td className={styles.tableCell}>{criterion.name}</td>
+                                <td className={styles.tableCell}>{criterion.weight}%</td>
+                                <td className={styles.tableCell}>
+                                  <select
+                                    value={selectedPeers[activePeerIndex].ratings[criterion.id] || ""}
+                                    onChange={(e) => handleRatingChange(activePeerIndex, criterion.id, e.target.value)}
+                                    className={styles.ratingSelect}
+                                    required
+                                  >
+                                    <option value="">Select</option>
+                                    {formConfig.ratingScale.map((scale) => (
+                                      <option key={scale.value} value={scale.value}>
+                                        {scale.value} - {scale.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </section>
-        </main>
 
-        {/* Footer */}
-        <footer className={HomePageStyles.footer}>
-          <div className={HomePageStyles.footerContent}>
-            <p>&copy; {new Date().getFullYear()} Adama Science & Technology University. All rights reserved.</p>
-            <div className={HomePageStyles.footerLinks}>
-              <Link to="/help">Help</Link>
-              <Link to="/privacy">Privacy</Link>
-              <Link to="/terms">Terms</Link>
-            </div>
+                      <div className={styles.formActions}>
+                        <button 
+                          type="submit" 
+                          className={styles.submitButton}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <svg className={styles.spinner} viewBox="0 0 50 50">
+                                <circle className={styles.path} cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle>
+                              </svg>
+                              Submitting...
+                            </>
+                          ) : (
+                            "Submit Evaluation"
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-        </footer>
-      </div>
-    </div>
+        </div>
+      </section>
+    </HomeMainLayout>
   )
 }
 

@@ -1,17 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 import styles from "./Reports.module.css"
-import HomePageStyles from "../../../pages/HomePage.module.css"
+import HomeMainLayout from "../../layout/home/HomeMainLayout"
+import { apiFetch } from "../../../lib/api"
 
 const Reports = () => {
   const [user, setUser] = useState({
-    name: "Samuel Hailu Demse",
-    role: "Software Programmer IV",
-    department: "Information Communication Technology",
+    name: "",
+    role: "",
+    department: "",
     avatar: "/assets/avatar-placeholder.png",
-    employeeId: "ASTU-ICT-001"
+    employeeId: ""
   })
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
@@ -109,6 +110,27 @@ const Reports = () => {
       ]
     },
   ]
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const me = await apiFetch("/users/me")
+        const fullName = `${me.firstName || ''} ${me.lastName || ''}`.trim() || me.email
+        setUser({
+          name: fullName,
+          role: me.role === 'team_member' ? 'Team Member' : me.role,
+          department: me.team?.name || '',
+          avatar: "/assets/avatar-placeholder.png",
+          employeeId: me.employeeId || '',
+          profileImageId: me.profileImageId,
+          id: me._id || me.id || ''
+        })
+      } catch (err) {
+        console.error("Failed to load current user:", err)
+      }
+    }
+    loadUser()
+  }, [])
 
   useEffect(() => {
     const checkIfMobile = () => {
@@ -217,446 +239,195 @@ const Reports = () => {
 
   if (loading) {
     return (
-      <div className={HomePageStyles.homeContainer}>
-        {/* Sidebar */}
-        <aside className={`${HomePageStyles.sidebar} ${isSidebarOpen ? HomePageStyles.sidebarOpen : ''}`}>
-          <div className={HomePageStyles.sidebarHeader}>
-            <div className={HomePageStyles.sidebarLogo}>
-              <img src="/astu_logo.svg" alt="ASTU Logo" className={HomePageStyles.sidebarLogoImage} />
-              {isSidebarOpen && (
-                <div className={HomePageStyles.sidebarTitle}>
-                  <h3>PMS</h3>
-                  <p>ASTU</p>
-                </div>
-              )}
-            </div>
-            <button className={HomePageStyles.sidebarToggle} onClick={toggleSidebar}>
-              {isSidebarOpen ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 12H20M20 12L13 5M20 12L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
-            </button>
-          </div>
-          
-          <nav className={HomePageStyles.sidebarNav}>
-            <ul>
-              {navLinks.map((link, index) => (
-                <li key={index}>
-                  <div className={HomePageStyles.navItemContainer}>
-                    <Link 
-                      to={link.link} 
-                      className={`${HomePageStyles.navLink} ${link.active ? HomePageStyles.active : ''}`}
-                      onClick={(e) => {
-                        if (link.hasPopout) {
-                          e.preventDefault()
-                          togglePopout(link.title)
-                        }
-                      }}
-                    >
-                      <div className={HomePageStyles.navIcon}>{link.icon}</div>
-                      {isSidebarOpen && <span>{link.title}</span>}
-                      {link.hasPopout && isSidebarOpen && (
-                        <div className={HomePageStyles.chevronIcon}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      )}
-                    </Link>
-                    
-                    {link.hasPopout && activePopout === link.title && (
-                      <div className={HomePageStyles.popoutMenu}>
-                        {link.popoutItems.map((item, idx) => (
-                          <Link 
-                            key={idx} 
-                            to={item.link} 
-                            className={HomePageStyles.popoutItem}
-                          >
-                            {item.title}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          
-          {isSidebarOpen && (
-            <div className={HomePageStyles.sidebarFooter}>
-              <div className={HomePageStyles.userInfo}>
-                <img 
-                  src={user.avatar} 
-                  alt="User Avatar" 
-                  className={HomePageStyles.userAvatar} 
-                />
-                <div>
-                  <h4>{user.name.split(" ")[0]}</h4>
-                  <p>{user.role}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </aside>
-
-        {/* Main Content Wrapper */}
-        <div className={`${HomePageStyles.mainWrapper} ${!isSidebarOpen ? HomePageStyles.mainWrapperFull : ''}`}>
-          {/* Header */}
-          <header className={HomePageStyles.header}>
-            <div className={HomePageStyles.headerContent}>
-              <div className={HomePageStyles.headerLeft}>
-                {isMobile && (
-                  <button className={HomePageStyles.mobileMenuButton} onClick={toggleSidebar}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                )}
-                <div className={HomePageStyles.systemTitle}>
-                  <h1>Performance Management System</h1>
-                  <p>Adama Science & Technology University</p>
-                </div>
-              </div>
-
-              <div className={HomePageStyles.userSection}>
-                <div className={HomePageStyles.userInfo}>
-                  <span className={HomePageStyles.userName}>{user.name}</span>
-                  <span className={HomePageStyles.userRole}>{user.role}</span>
-                </div>
-                <div className={HomePageStyles.avatarContainer}>
-                  <img 
-                    src={user.avatar} 
-                    alt="User Avatar" 
-                    className={HomePageStyles.userAvatar} 
-                  />
-                  <div className={HomePageStyles.statusIndicator}></div>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className={HomePageStyles.mainContent}>
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner}></div>
-              <p>Loading performance reports...</p>
-            </div>
-          </main>
+      <HomeMainLayout
+        isSidebarOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        isMobile={isMobile}
+        user={user}
+        navLinks={navLinks}
+        activePopout={activePopout}
+        togglePopout={togglePopout}
+      >
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading performance reports...</p>
         </div>
-      </div>
+      </HomeMainLayout>
     )
   }
 
   return (
-    <div className={HomePageStyles.homeContainer}>
-      {/* Sidebar */}
-      <aside className={`${HomePageStyles.sidebar} ${isSidebarOpen ? HomePageStyles.sidebarOpen : ''}`}>
-        <div className={HomePageStyles.sidebarHeader}>
-          <div className={HomePageStyles.sidebarLogo}>
-            <img src="/astu_sidebar_logo.png" alt="ASTU Logo" className={HomePageStyles.sidebarLogoImage} />
-            {isSidebarOpen && (
-              <div className={HomePageStyles.sidebarTitle}>
-                <h3>PMS</h3>
-                <p>ASTU</p>
-              </div>
-            )}
-          </div>
-          <button className={HomePageStyles.sidebarToggle} onClick={toggleSidebar}>
-            {isSidebarOpen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 12H20M20 12L13 5M20 12L13 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            )}
-          </button>
+    <HomeMainLayout
+      isSidebarOpen={isSidebarOpen}
+      toggleSidebar={toggleSidebar}
+      isMobile={isMobile}
+      user={user}
+      navLinks={navLinks}
+      activePopout={activePopout}
+      togglePopout={togglePopout}
+    >
+      <section className={styles.contentSection}>
+        <div className={styles.headerSection}>
+          <h2 className={styles.pageTitle}>Performance Reports</h2>
+          <p className={styles.pageSubtitle}>Review your historical performance evaluations</p>
         </div>
-        
-        <nav className={HomePageStyles.sidebarNav}>
-          <ul>
-            {navLinks.map((link, index) => (
-              <li key={index}>
-                <div className={HomePageStyles.navItemContainer}>
-                  <Link 
-                    to={link.link} 
-                    className={`${HomePageStyles.navLink} ${link.active ? HomePageStyles.active : ''}`}
-                    onClick={(e) => {
-                      if (link.hasPopout) {
-                        e.preventDefault()
-                        togglePopout(link.title)
-                      }
-                    }}
-                  >
-                    <div className={HomePageStyles.navIcon}>{link.icon}</div>
-                    {isSidebarOpen && <span>{link.title}</span>}
-                    {link.hasPopout && isSidebarOpen && (
-                      <div className={HomePageStyles.chevronIcon}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+
+        {reports.length === 0 ? (
+          <div className={styles.emptyState}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M14 2V8H20" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M16 13H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M16 17H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M10 9H9H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h3>No Reports Available</h3>
+            <p>Your performance reports will appear here once available.</p>
+          </div>
+        ) : (
+          <div className={styles.reportsTableContainer}>
+            <table className={styles.reportsTable}>
+              <thead>
+                <tr>
+                  <th className={styles.tableHeader}>Report Title</th>
+                  <th className={styles.tableHeader}>Category</th>
+                  <th className={styles.tableHeader}>Date</th>
+                  <th className={styles.tableHeader}>Score</th>
+                  <th className={styles.tableHeader}>Status</th>
+                  <th className={styles.tableHeader}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.map((report) => (
+                  <tr key={report.id} className={styles.tableRow}>
+                    <td className={styles.tableCell}>
+                      <div className={styles.reportTitle}>{report.title}</div>
+                      <div className={styles.reportEvaluator}>{report.evaluator}</div>
+                    </td>
+                    <td className={styles.tableCell}>{report.category}</td>
+                    <td className={styles.tableCell}>
+                      {new Date(report.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </td>
+                    <td className={styles.tableCell}>
+                      <div className={styles.scoreContainer}>
+                        <div className={styles.scorePill} style={{
+                          backgroundColor: getScoreColor(report.score)
+                        }}>
+                          {report.score}%
+                        </div>
                       </div>
-                    )}
-                  </Link>
-                  
-                  {link.hasPopout && activePopout === link.title && (
-                    <div className={HomePageStyles.popoutMenu}>
-                      {link.popoutItems.map((item, idx) => (
-                        <Link 
-                          key={idx} 
-                          to={item.link} 
-                          className={HomePageStyles.popoutItem}
-                        >
-                          {item.title}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        {isSidebarOpen && (
-          <div className={HomePageStyles.sidebarFooter}>
-            <div className={HomePageStyles.userInfo}>
-              <img 
-                src={user.avatar} 
-                alt="User Avatar" 
-                className={HomePageStyles.userAvatar} 
-              />
-              <div>
-                <h4>{user.name.split(" ")[0]}</h4>
-                <p>{user.role}</p>
-              </div>
-            </div>
+                    </td>
+                    <td className={styles.tableCell}>
+                      <div className={`${styles.statusPill} ${styles[report.status.toLowerCase()]}`}>
+                        {report.status}
+                      </div>
+                    </td>
+                    <td className={styles.tableCell}>
+                      <button 
+                        onClick={() => viewReportDetails(report)}
+                        className={styles.viewButton}
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </aside>
+      </section>
 
-      {/* Main Content Wrapper */}
-      <div className={`${HomePageStyles.mainWrapper} ${!isSidebarOpen ? HomePageStyles.mainWrapperFull : ''}`}>
-        {/* Header */}
-        <header className={HomePageStyles.header}>
-          <div className={HomePageStyles.headerContent}>
-            <div className={HomePageStyles.headerLeft}>
-              {isMobile && (
-                <button className={HomePageStyles.mobileMenuButton} onClick={toggleSidebar}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              )}
-              <div className={HomePageStyles.systemTitle}>
-                <h1>Performance Management System</h1>
-                <p>Adama Science & Technology University</p>
-              </div>
-            </div>
-
-            <div className={HomePageStyles.userSection}>
-              <div className={HomePageStyles.userInfo}>
-                <span className={HomePageStyles.userName}>{user.name}</span>
-                <span className={HomePageStyles.userRole}>{user.role}</span>
-              </div>
-              <div className={HomePageStyles.avatarContainer}>
-                <img 
-                  src={user.avatar} 
-                  alt="User Avatar" 
-                  className={HomePageStyles.userAvatar} 
-                />
-                <div className={HomePageStyles.statusIndicator}></div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className={HomePageStyles.mainContent}>
-          <section className={styles.contentSection}>
-            <div className={styles.headerSection}>
-              <h2 className={styles.pageTitle}>Performance Reports</h2>
-              <p className={styles.pageSubtitle}>Review your historical performance evaluations</p>
-            </div>
-
-            {reports.length === 0 ? (
-              <div className={styles.emptyState}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M14 2V8H20" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M16 13H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M16 17H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M10 9H9H8" stroke="var(--gray-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      {selectedReport && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h3>{selectedReport.title}</h3>
+              <button onClick={closeReportDetails} className={styles.closeButton}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <h3>No Reports Available</h3>
-                <p>Your performance reports will appear here once available.</p>
+              </button>
+            </div>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.reportMeta}>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Date:</span>
+                  <span>{new Date(selectedReport.date).toLocaleDateString()}</span>
+                </div>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Evaluator:</span>
+                  <span>{selectedReport.evaluator}</span>
+                </div>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Overall Score:</span>
+                  <span className={styles.scoreText} style={{ color: getScoreColor(selectedReport.score) }}>
+                    {selectedReport.score}%
+                  </span>
+                </div>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Status:</span>
+                  <span className={`${styles.statusText} ${styles[selectedReport.status.toLowerCase()]}`}>
+                    {selectedReport.status}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className={styles.reportsTableContainer}>
-                <table className={styles.reportsTable}>
+
+              <div className={styles.section}>
+                <h4 className={styles.sectionTitle}>Performance Breakdown</h4>
+                <table className={styles.detailsTable}>
                   <thead>
                     <tr>
-                      <th className={styles.tableHeader}>Report Title</th>
-                      <th className={styles.tableHeader}>Category</th>
-                      <th className={styles.tableHeader}>Date</th>
-                      <th className={styles.tableHeader}>Score</th>
-                      <th className={styles.tableHeader}>Status</th>
-                      <th className={styles.tableHeader}>Actions</th>
+                      <th className={styles.detailsHeader}>Criterion</th>
+                      <th className={styles.detailsHeader}>Weight</th>
+                      <th className={styles.detailsHeader}>Score</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.map((report) => (
-                      <tr key={report.id} className={styles.tableRow}>
-                        <td className={styles.tableCell}>
-                          <div className={styles.reportTitle}>{report.title}</div>
-                          <div className={styles.reportEvaluator}>{report.evaluator}</div>
-                        </td>
-                        <td className={styles.tableCell}>{report.category}</td>
-                        <td className={styles.tableCell}>
-                          {new Date(report.date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </td>
-                        <td className={styles.tableCell}>
-                          <div className={styles.scoreContainer}>
-                            <div className={styles.scorePill} style={{
-                              backgroundColor: getScoreColor(report.score)
-                            }}>
-                              {report.score}%
-                            </div>
+                    {selectedReport.details.map((detail, index) => (
+                      <tr key={index} className={styles.detailsRow}>
+                        <td className={styles.detailsCell}>{detail.criterion}</td>
+                        <td className={styles.detailsCell}>{detail.weight}%</td>
+                        <td className={styles.detailsCell}>
+                          <div className={styles.scoreBarContainer}>
+                            <div 
+                              className={styles.scoreBarFill} 
+                              style={{
+                                width: `${detail.score}%`,
+                                backgroundColor: getScoreColor(detail.score)
+                              }}
+                            ></div>
+                            <span className={styles.scoreValue}>{detail.score}%</span>
                           </div>
-                        </td>
-                        <td className={styles.tableCell}>
-                          <div className={`${styles.statusPill} ${styles[report.status.toLowerCase()]}`}>
-                            {report.status}
-                          </div>
-                        </td>
-                        <td className={styles.tableCell}>
-                          <button 
-                            onClick={() => viewReportDetails(report)}
-                            className={styles.viewButton}
-                          >
-                            View Details
-                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-          </section>
 
-          {/* Report Details Modal */}
-          {selectedReport && (
-            <div className={styles.modalOverlay}>
-              <div className={styles.modalContent}>
-                <div className={styles.modalHeader}>
-                  <h3>{selectedReport.title}</h3>
-                  <button onClick={closeReportDetails} className={styles.closeButton}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-                
-                <div className={styles.modalBody}>
-                  <div className={styles.reportMeta}>
-                    <div className={styles.metaItem}>
-                      <span className={styles.metaLabel}>Date:</span>
-                      <span>{new Date(selectedReport.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <span className={styles.metaLabel}>Evaluator:</span>
-                      <span>{selectedReport.evaluator}</span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <span className={styles.metaLabel}>Overall Score:</span>
-                      <span className={styles.scoreText} style={{ color: getScoreColor(selectedReport.score) }}>
-                        {selectedReport.score}%
-                      </span>
-                    </div>
-                    <div className={styles.metaItem}>
-                      <span className={styles.metaLabel}>Status:</span>
-                      <span className={`${styles.statusText} ${styles[selectedReport.status.toLowerCase()]}`}>
-                        {selectedReport.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>Performance Breakdown</h4>
-                    <table className={styles.detailsTable}>
-                      <thead>
-                        <tr>
-                          <th className={styles.detailsHeader}>Criterion</th>
-                          <th className={styles.detailsHeader}>Weight</th>
-                          <th className={styles.detailsHeader}>Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedReport.details.map((detail, index) => (
-                          <tr key={index} className={styles.detailsRow}>
-                            <td className={styles.detailsCell}>{detail.criterion}</td>
-                            <td className={styles.detailsCell}>{detail.weight}%</td>
-                            <td className={styles.detailsCell}>
-                              <div className={styles.scoreBarContainer}>
-                                <div 
-                                  className={styles.scoreBarFill} 
-                                  style={{
-                                    width: `${detail.score}%`,
-                                    backgroundColor: getScoreColor(detail.score)
-                                  }}
-                                ></div>
-                                <span className={styles.scoreValue}>{detail.score}%</span>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className={styles.section}>
-                    <h4 className={styles.sectionTitle}>Evaluator Comments</h4>
-                    <div className={styles.commentsBox}>
-                      {selectedReport.adminComments}
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.modalFooter}>
-                  <button onClick={closeReportDetails} className={styles.closeModalButton}>
-                    Close
-                  </button>
+              <div className={styles.section}>
+                <h4 className={styles.sectionTitle}>Evaluator Comments</h4>
+                <div className={styles.commentsBox}>
+                  {selectedReport.adminComments}
                 </div>
               </div>
             </div>
-          )}
-        </main>
 
-        {/* Footer */}
-        <footer className={HomePageStyles.footer}>
-          <div className={HomePageStyles.footerContent}>
-            <p>&copy; {new Date().getFullYear()} Adama Science & Technology University. All rights reserved.</p>
-            <div className={HomePageStyles.footerLinks}>
-              <Link to="/help">Help</Link>
-              <Link to="/privacy">Privacy</Link>
-              <Link to="/terms">Terms</Link>
+            <div className={styles.modalFooter}>
+              <button onClick={closeReportDetails} className={styles.closeModalButton}>
+                Close
+              </button>
             </div>
           </div>
-        </footer>
-      </div>
-    </div>
+        </div>
+      )}
+    </HomeMainLayout>
   )
 }
 
